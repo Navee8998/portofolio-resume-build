@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900;
+  }
+}
+
+/* Print styles override */
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+  
+  body {
+    background: white;
+  }
+  
+  /* Hide everything except the resume preview container when printing */
+  body > *:not(#root) {
+    display: none;
+  }
+}
