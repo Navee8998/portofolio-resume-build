@@ -3,6 +3,22 @@ export interface User {
   name?: string;
 }
 
+export type FontFamily = 
+  | 'Inter' 
+  | 'Roboto' 
+  | 'Open Sans' 
+  | 'Lato' 
+  | 'Montserrat' 
+  | 'Merriweather' 
+  | 'Playfair Display' 
+  | 'Lora' 
+  | 'PT Serif' 
+  | 'Roboto Mono' 
+  | 'Source Code Pro' 
+  | 'Fira Code';
+
+export type PaperSize = 'a4' | 'a6' | 'letter';
+
 export interface ResumeSettings {
   fontSize: number;
   lineHeight: number;
@@ -11,7 +27,8 @@ export interface ResumeSettings {
   marginBottom: number;
   marginLeft: number;
   marginRight: number;
-  fontFamily: 'sans' | 'serif' | 'mono';
+  fontFamily: FontFamily;
+  paperSize: PaperSize;
   theme: 'light' | 'minimal' | 'modern';
   accentColor: string;
 }
@@ -48,14 +65,15 @@ University of Technology | 2014 - 2018
 `;
 
 export const DEFAULT_SETTINGS: ResumeSettings = {
-  fontSize: 16,
+  fontSize: 14,
   lineHeight: 1.5,
-  paragraphSpacing: 16,
-  marginTop: 40,
-  marginBottom: 40,
-  marginLeft: 40,
-  marginRight: 40,
-  fontFamily: 'sans',
-  theme: 'light',
+  paragraphSpacing: 12,
+  marginTop: 30,
+  marginBottom: 30,
+  marginLeft: 30,
+  marginRight: 30,
+  fontFamily: 'Inter',
+  paperSize: 'a4',
+  theme: 'modern',
   accentColor: '#2563eb',
 };

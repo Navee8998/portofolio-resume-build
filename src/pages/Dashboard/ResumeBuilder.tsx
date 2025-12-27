@@ -1,26 +1,21 @@
 import React, { useState, useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
 import { useAuth } from '../../context/AuthContext';
-import { ResumePreview } from '../../components/Resume/ResumePreview';
 import { EditorControls } from '../../components/Editor/EditorControls';
+import { ResumePreview } from '../../components/Resume/ResumePreview';
+import { ResumeSettings, DEFAULT_SETTINGS, DEFAULT_MARKDOWN } from '../../types';
 import { Button } from '../../components/ui/Button';
-import { DEFAULT_MARKDOWN, DEFAULT_SETTINGS, ResumeSettings } from '../../types';
-import { 
-  Download, 
-  LogOut, 
-  Upload, 
-  FileJson,
-  Menu,
-  X
-} from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
+import { LogOut, Download, Upload, FileDown, Menu, X } from 'lucide-react';
+import { clsx } from 'clsx';
 
 export default function ResumeBuilder() {
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
   const [settings, setSettings] = useState<ResumeSettings>(DEFAULT_SETTINGS);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'settings'>('editor');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -29,19 +24,7 @@ export default function ResumeBuilder() {
   });
 
   const updateSettings = (key: keyof ResumeSettings, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        setMarkdown(content);
-      };
-      reader.readAsText(file);
-    }
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleExportMarkdown = () => {
@@ -54,129 +37,137 @@ export default function ResumeBuilder() {
     URL.revokeObjectURL(url);
   };
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 z-10">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-1.5 rounded text-white">
-            <FileJson size={20} />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900 hidden sm:block">Resume Builder</h1>
-        </div>
+  const handleImportMarkdown = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        setMarkdown(content);
+      };
+      reader.readAsText(file);
+    }
+  };
 
+  return (
+    <div className="flex h-screen flex-col bg-gray-50">
+      {/* Header */}
+      <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 shadow-sm sm:px-6 lg:px-8 z-20">
+        <div className="flex items-center">
+          <h1 className="text-xl font-bold text-gray-900">Resume Builder</h1>
+        </div>
+        
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2">
-            <label className="cursor-pointer">
-              <input type="file" accept=".md,.txt" onChange={handleFileUpload} className="hidden" />
-              <Button variant="outline" size="sm">
-                <Upload className="w-4 h-4 mr-2" />
-                Import MD
-              </Button>
-            </label>
-            <Button variant="outline" size="sm" onClick={handleExportMarkdown}>
-              <Download className="w-4 h-4 mr-2" />
-              Export MD
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportMarkdown}
+              accept=".md"
+              className="hidden"
+            />
+            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import
             </Button>
-            <Button variant="primary" size="sm" onClick={() => handlePrint()}>
-              <Download className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={handleExportMarkdown}>
+              <FileDown className="mr-2 h-4 w-4" />
+              MD
+            </Button>
+            <Button size="sm" onClick={() => handlePrint()}>
+              <Download className="mr-2 h-4 w-4" />
               PDF
             </Button>
-          </div>
-          
-          <div className="h-6 w-px bg-gray-300 mx-2 hidden md:block"></div>
-          
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
-            <Button variant="ghost" size="sm" onClick={logout} title="Logout">
-              <LogOut className="w-4 h-4" />
+            <div className="mx-2 h-6 w-px bg-gray-300" />
+            <Button variant="ghost" size="sm" onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
             </Button>
           </div>
 
+          {/* Mobile Menu Button */}
           <button 
             className="md:hidden p-2 text-gray-600"
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {showMobileMenu ? <X /> : <Menu />}
+            {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
-      {showMobileMenu && (
-        <div className="absolute top-16 left-0 w-full bg-white border-b border-gray-200 p-4 flex flex-col gap-3 md:hidden z-20 shadow-lg">
-           <label className="cursor-pointer w-full">
-              <input type="file" accept=".md,.txt" onChange={handleFileUpload} className="hidden" />
-              <Button variant="outline" className="w-full justify-start">
-                <Upload className="w-4 h-4 mr-2" />
-                Import Markdown
-              </Button>
-            </label>
-            <Button variant="outline" className="w-full justify-start" onClick={handleExportMarkdown}>
-              <Download className="w-4 h-4 mr-2" />
-              Export Markdown
-            </Button>
-            <Button variant="primary" className="w-full justify-start" onClick={() => handlePrint()}>
-              <Download className="w-4 h-4 mr-2" />
-              Download PDF
-            </Button>
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-b border-gray-200 p-4 space-y-2 absolute top-16 left-0 right-0 z-50 shadow-lg">
+          <Button variant="outline" className="w-full justify-start" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" /> Import MD
+          </Button>
+          <Button variant="outline" className="w-full justify-start" onClick={handleExportMarkdown}>
+            <FileDown className="mr-2 h-4 w-4" /> Export MD
+          </Button>
+          <Button className="w-full justify-start" onClick={() => handlePrint()}>
+            <Download className="mr-2 h-4 w-4" /> Download PDF
+          </Button>
+          <Button variant="ghost" className="w-full justify-start text-red-600" onClick={logout}>
+            <LogOut className="mr-2 h-4 w-4" /> Logout
+          </Button>
         </div>
       )}
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Controls - Hidden on mobile unless needed, but we'll put them in a tab for mobile */}
-        <div className="hidden md:block h-full">
-          <EditorControls settings={settings} updateSettings={updateSettings} />
-        </div>
-
         {/* Mobile Tabs */}
-        <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex z-30">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 z-30">
           <button 
-            className={`flex-1 py-3 text-sm font-medium ${activeTab === 'editor' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}
+            onClick={() => setActiveTab('settings')}
+            className={clsx("p-2 text-sm font-medium rounded-md", activeTab === 'settings' ? "bg-blue-50 text-blue-600" : "text-gray-600")}
+          >
+            Settings
+          </button>
+          <button 
             onClick={() => setActiveTab('editor')}
+            className={clsx("p-2 text-sm font-medium rounded-md", activeTab === 'editor' ? "bg-blue-50 text-blue-600" : "text-gray-600")}
           >
             Editor
           </button>
           <button 
-            className={`flex-1 py-3 text-sm font-medium ${activeTab === 'preview' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}
             onClick={() => setActiveTab('preview')}
+            className={clsx("p-2 text-sm font-medium rounded-md", activeTab === 'preview' ? "bg-blue-50 text-blue-600" : "text-gray-600")}
           >
             Preview
           </button>
         </div>
 
-        {/* Editor Area */}
-        <div className={`flex-1 flex flex-col md:flex-row overflow-hidden ${activeTab === 'editor' ? 'block' : 'hidden md:flex'}`}>
-          {/* Markdown Input */}
-          <div className="flex-1 h-full border-r border-gray-200 bg-white flex flex-col">
-            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Markdown Input
-            </div>
-            <textarea
-              className="flex-1 w-full p-4 resize-none focus:outline-none font-mono text-sm leading-relaxed"
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              placeholder="# Your Name..."
-            />
-          </div>
+        {/* Left Sidebar - Settings */}
+        <div className={clsx(
+          "w-full md:w-80 bg-white border-r border-gray-200 md:block",
+          activeTab === 'settings' ? "block" : "hidden"
+        )}>
+          <EditorControls settings={settings} updateSettings={updateSettings} />
         </div>
 
-        {/* Preview Area */}
-        <div className={`flex-1 bg-gray-100 relative overflow-hidden ${activeTab === 'preview' ? 'block' : 'hidden md:block'}`}>
-           {/* Mobile Controls Overlay when in preview mode */}
-           <div className="md:hidden absolute top-0 right-0 z-10 p-2">
-             <details className="relative">
-                <summary className="list-none bg-white p-2 rounded-full shadow cursor-pointer text-gray-700">
-                  <Menu size={20} />
-                </summary>
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 max-h-[60vh] overflow-y-auto">
-                  <EditorControls settings={settings} updateSettings={updateSettings} />
-                </div>
-             </details>
-           </div>
+        {/* Center - Editor */}
+        <div className={clsx(
+          "flex-1 bg-white md:block",
+          activeTab === 'editor' ? "block" : "hidden"
+        )}>
+          <textarea
+            value={markdown}
+            onChange={(e) => setMarkdown(e.target.value)}
+            className="h-full w-full resize-none p-4 font-mono text-sm focus:outline-none md:p-8"
+            placeholder="Type your resume markdown here..."
+          />
+        </div>
 
-           <ResumePreview ref={componentRef} markdown={markdown} settings={settings} />
+        {/* Right - Preview */}
+        <div className={clsx(
+          "flex-1 bg-gray-100/50 md:block overflow-auto",
+          activeTab === 'preview' ? "block" : "hidden"
+        )}>
+          <ResumePreview 
+            ref={componentRef} 
+            markdown={markdown} 
+            settings={settings} 
+          />
         </div>
       </div>
     </div>

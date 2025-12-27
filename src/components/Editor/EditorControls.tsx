@@ -1,54 +1,148 @@
 import React from 'react';
-import { ResumeSettings } from '../../types';
+import { ResumeSettings, FontFamily, PaperSize } from '../../types';
 import { Input } from '../ui/Input';
 import { 
   Type, 
   AlignJustify, 
-  LayoutTemplate, 
-  Palette,
-  Maximize
+  LayoutTemplate,
+  Palette
 } from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface EditorControlsProps {
   settings: ResumeSettings;
   updateSettings: (key: keyof ResumeSettings, value: any) => void;
 }
 
+const FONT_OPTIONS: { label: string; value: FontFamily; type: string }[] = [
+  { label: 'Inter', value: 'Inter', type: 'Sans' },
+  { label: 'Roboto', value: 'Roboto', type: 'Sans' },
+  { label: 'Open Sans', value: 'Open Sans', type: 'Sans' },
+  { label: 'Lato', value: 'Lato', type: 'Sans' },
+  { label: 'Montserrat', value: 'Montserrat', type: 'Sans' },
+  { label: 'Merriweather', value: 'Merriweather', type: 'Serif' },
+  { label: 'Playfair Display', value: 'Playfair Display', type: 'Serif' },
+  { label: 'Lora', value: 'Lora', type: 'Serif' },
+  { label: 'PT Serif', value: 'PT Serif', type: 'Serif' },
+  { label: 'Roboto Mono', value: 'Roboto Mono', type: 'Mono' },
+  { label: 'Source Code Pro', value: 'Source Code Pro', type: 'Mono' },
+  { label: 'Fira Code', value: 'Fira Code', type: 'Mono' },
+];
+
+const PAPER_SIZES: { label: string; value: PaperSize }[] = [
+  { label: 'A4 (210 x 297 mm)', value: 'a4' },
+  { label: 'A6 (105 x 148 mm)', value: 'a6' },
+  { label: 'Letter (8.5 x 11 in)', value: 'letter' },
+];
+
+const THEME_COLORS = [
+  '#1f2937', // Default Gray
+  '#2563eb', // Blue
+  '#dc2626', // Red
+  '#16a34a', // Green
+  '#9333ea', // Purple
+  '#d97706', // Amber
+  '#0891b2', // Cyan
+  '#db2777', // Pink
+];
+
 export const EditorControls: React.FC<EditorControlsProps> = ({ settings, updateSettings }) => {
   return (
-    <div className="h-full overflow-y-auto bg-white border-r border-gray-200 p-4 w-full md:w-80 flex-shrink-0">
-      <h2 className="text-lg font-semibold mb-6 text-gray-800">Customization</h2>
+    <div className="h-full overflow-y-auto bg-white p-5 w-full pb-20 md:pb-5">
+      <h2 className="text-xl font-bold mb-6 text-gray-900">Design Settings</h2>
       
       <div className="space-y-8">
+        {/* Layout Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-800 border-b pb-2">
+            <LayoutTemplate className="w-4 h-4" />
+            <h3>Layout</h3>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">Paper Size</label>
+              <select
+                value={settings.paperSize}
+                onChange={(e) => updateSettings('paperSize', e.target.value)}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                {PAPER_SIZES.map((size) => (
+                  <option key={size.value} value={size.value}>
+                    {size.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-2 block">Margins (px)</label>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  type="number"
+                  label="Top"
+                  value={settings.marginTop}
+                  onChange={(e) => updateSettings('marginTop', Number(e.target.value))}
+                  className="h-8 text-xs"
+                />
+                <Input
+                  type="number"
+                  label="Bottom"
+                  value={settings.marginBottom}
+                  onChange={(e) => updateSettings('marginBottom', Number(e.target.value))}
+                  className="h-8 text-xs"
+                />
+                <Input
+                  type="number"
+                  label="Left"
+                  value={settings.marginLeft}
+                  onChange={(e) => updateSettings('marginLeft', Number(e.target.value))}
+                  className="h-8 text-xs"
+                />
+                <Input
+                  type="number"
+                  label="Right"
+                  value={settings.marginRight}
+                  onChange={(e) => updateSettings('marginRight', Number(e.target.value))}
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Typography Section */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-800 border-b pb-2">
             <Type className="w-4 h-4" />
             <h3>Typography</h3>
           </div>
           
-          <div className="space-y-4 pl-2">
+          <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Font Family</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['sans', 'serif', 'mono'].map((font) => (
-                  <button
-                    key={font}
-                    onClick={() => updateSettings('fontFamily', font)}
-                    className={`px-2 py-1.5 text-sm border rounded capitalize ${
-                      settings.fontFamily === font 
-                        ? 'bg-blue-50 border-blue-500 text-blue-700' 
-                        : 'border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    {font}
-                  </button>
-                ))}
-              </div>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">Font Family</label>
+              <select
+                value={settings.fontFamily}
+                onChange={(e) => updateSettings('fontFamily', e.target.value)}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <optgroup label="Sans Serif">
+                  {FONT_OPTIONS.filter(f => f.type === 'Sans').map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </optgroup>
+                <optgroup label="Serif">
+                  {FONT_OPTIONS.filter(f => f.type === 'Serif').map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </optgroup>
+                <optgroup label="Monospace">
+                  {FONT_OPTIONS.filter(f => f.type === 'Mono').map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </optgroup>
+              </select>
             </div>
 
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Font Size ({settings.fontSize}px)</label>
+              <div className="flex justify-between mb-1">
+                <label className="text-xs font-medium text-gray-500">Font Size</label>
+                <span className="text-xs text-gray-400">{settings.fontSize}px</span>
+              </div>
               <input
                 type="range"
                 min="10"
@@ -56,22 +150,51 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ settings, update
                 step="1"
                 value={settings.fontSize}
                 onChange={(e) => updateSettings('fontSize', Number(e.target.value))}
-                className="w-full accent-blue-600"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
+            </div>
+          </div>
+        </section>
+
+        {/* Theme Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-800 border-b pb-2">
+            <Palette className="w-4 h-4" />
+            <h3>Theme Color</h3>
+          </div>
+          
+          <div>
+            <label className="text-xs font-medium text-gray-500 mb-2 block">Headings Color</label>
+            <div className="flex flex-wrap gap-2">
+              {THEME_COLORS.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => updateSettings('accentColor', color)}
+                  className={clsx(
+                    "w-8 h-8 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform hover:scale-110",
+                    settings.accentColor === color && "ring-2 ring-offset-2 ring-blue-500 scale-110"
+                  )}
+                  style={{ backgroundColor: color }}
+                  aria-label={`Select color ${color}`}
+                />
+              ))}
             </div>
           </div>
         </section>
 
         {/* Spacing Section */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-800 border-b pb-2">
             <AlignJustify className="w-4 h-4" />
             <h3>Spacing</h3>
           </div>
 
-          <div className="space-y-4 pl-2">
+          <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Line Height ({settings.lineHeight})</label>
+              <div className="flex justify-between mb-1">
+                <label className="text-xs font-medium text-gray-500">Line Height</label>
+                <span className="text-xs text-gray-400">{settings.lineHeight}</span>
+              </div>
               <input
                 type="range"
                 min="1"
@@ -79,12 +202,15 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ settings, update
                 step="0.1"
                 value={settings.lineHeight}
                 onChange={(e) => updateSettings('lineHeight', Number(e.target.value))}
-                className="w-full accent-blue-600"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Paragraph Spacing ({settings.paragraphSpacing}px)</label>
+              <div className="flex justify-between mb-1">
+                <label className="text-xs font-medium text-gray-500">Paragraph Spacing</label>
+                <span className="text-xs text-gray-400">{settings.paragraphSpacing}px</span>
+              </div>
               <input
                 type="range"
                 min="0"
@@ -92,88 +218,9 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ settings, update
                 step="4"
                 value={settings.paragraphSpacing}
                 onChange={(e) => updateSettings('paragraphSpacing', Number(e.target.value))}
-                className="w-full accent-blue-600"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
             </div>
-          </div>
-        </section>
-
-        {/* Layout Section */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Maximize className="w-4 h-4" />
-            <h3>Margins (px)</h3>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 pl-2">
-            <Input
-              type="number"
-              label="Top"
-              value={settings.marginTop}
-              onChange={(e) => updateSettings('marginTop', Number(e.target.value))}
-            />
-            <Input
-              type="number"
-              label="Bottom"
-              value={settings.marginBottom}
-              onChange={(e) => updateSettings('marginBottom', Number(e.target.value))}
-            />
-            <Input
-              type="number"
-              label="Left"
-              value={settings.marginLeft}
-              onChange={(e) => updateSettings('marginLeft', Number(e.target.value))}
-            />
-            <Input
-              type="number"
-              label="Right"
-              value={settings.marginRight}
-              onChange={(e) => updateSettings('marginRight', Number(e.target.value))}
-            />
-          </div>
-        </section>
-
-        {/* Theme Section */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Palette className="w-4 h-4" />
-            <h3>Theme</h3>
-          </div>
-
-          <div className="space-y-4 pl-2">
-            <div className="grid grid-cols-3 gap-2">
-              {['light', 'minimal', 'modern'].map((theme) => (
-                <button
-                  key={theme}
-                  onClick={() => updateSettings('theme', theme)}
-                  className={`px-2 py-1.5 text-sm border rounded capitalize ${
-                    settings.theme === theme 
-                      ? 'bg-blue-50 border-blue-500 text-blue-700' 
-                      : 'border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  {theme}
-                </button>
-              ))}
-            </div>
-            
-            {settings.theme === 'modern' && (
-               <div>
-               <label className="text-xs text-gray-500 mb-1 block">Accent Color</label>
-               <div className="flex gap-2 flex-wrap">
-                 {['#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c'].map((color) => (
-                   <button
-                     key={color}
-                     onClick={() => updateSettings('accentColor', color)}
-                     className={`w-6 h-6 rounded-full border-2 ${
-                       settings.accentColor === color ? 'border-gray-900' : 'border-transparent'
-                     }`}
-                     style={{ backgroundColor: color }}
-                   />
-                 ))}
-               </div>
-             </div>
-            )}
           </div>
         </section>
       </div>
